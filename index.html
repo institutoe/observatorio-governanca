@@ -290,10 +290,10 @@ tr.inv-row td{background:#fefce8}
   </div>
 
   <div class="panel" id="panel-longevidade">
-    <div class="notice"><strong>⏳ CI Longevidade — Conselheiros Independentes com Mandato Prolongado</strong><br>
-    Fonte: FRE 2026 (CVM). O campo <em>anos</em> representa o tempo total de exercício declarado no FRE — <strong>os dados brutos não distinguem períodos consecutivos de não-consecutivos na mesma companhia</strong>; a separação abaixo é estimativa com base em padrões observados.<br>
-    Cobertura disponível: <strong>50 conselheiros com 14+ anos</strong> (nomes individuais). Para faixas de 8–13 anos existem apenas totais agregados (96 com 10+ anos, sem detalhe nominal).<br>
-    Ano de primeira assunção = estimativa: 2026 − anos declarados.</div>
+    <div class="notice red"><strong>⏳ Independência Comprometida pelo Tempo — Permanência de Conselheiros Independentes</strong><br>
+    A independência formal é declarada no FRE e aceita pela assembleia. A independência <em>substantiva</em> deteriora-se com o tempo: quanto maior a permanência na mesma companhia controlada pelo mesmo grupo, maiores os laços de confiança, os vínculos informais e o risco de captura pelo controlador — independentemente da classificação que consta no documento.<br>
+    O CP B3 01/2024 e o IBGC adotam 10 anos como referência crítica. <strong>9,1% dos conselheiros independentes B3 (96 de 1.053) já ultrapassaram esse limite.</strong> Os dados abaixo identificam esses casos nominalmente onde a fonte permite.<br>
+    <em>Fonte: FRE 2026 (CVM). Limitações: dados nominais disponíveis apenas para 14+ anos (50 casos); faixa 8–13 anos com totais agregados apenas. Ano de início = estimativa: 2026 − anos declarados.</em></div>
     <div id="longevidade-body"></div>
   </div>
 
@@ -555,9 +555,9 @@ function rLongevidade(){
 
   // Note on data coverage
   var dataNota='<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:10px 14px;font-size:11px;color:#78350f;margin-bottom:16px">'
-    +'<strong>⚠️ Cobertura dos dados:</strong> a lista nominal abaixo cobre os <strong>50 conselheiros com 14+ anos</strong> identificados no FRE 2026. '
-    +'Para a faixa 8–13 anos, os dados brutos da CVM contêm apenas totais agregados (96 com 10+ anos) — sem identificação nominal nesta versão. '
-    +'<strong>Consecutivo vs. não-consecutivo:</strong> o FRE não explicita essa distinção; "consecutivo" abaixo indica presença ininterrupta registrada nos FREs disponíveis; "não-consecutivo" indica lacunas detectadas por padrão de cargo (Suplente/Efetivo alternando) ou cargo repetido após intervalo.'
+    +'<strong>⚠️ Cobertura nominal:</strong> identificação individual disponível para os <strong>50 conselheiros com 14+ anos</strong> registrados no FRE 2026. '
+    +'Para a faixa 10–13 anos existem 46 casos adicionais (total: 96 com 10+ anos) sem detalhe nominal nesta extração — a magnitude do problema é ainda maior do que a lista abaixo sugere. '
+    +'O FRE declara o total acumulado de anos; não permite distinção estruturada entre períodos consecutivos e não-consecutivos.'
     +'</div>';
 
   // Build table rows — try to infer consecutive/non-consecutive from cargo field
@@ -598,23 +598,25 @@ function rLongevidade(){
 
   // Section: 14+ years (all available with names)
   var sec14='<div style="background:#fff;border:1px solid #dc262633;border-left:4px solid #dc2626;border-radius:8px;padding:14px;margin-bottom:14px">'
-    +'<h4 style="margin:0 0 10px;font-size:13px;color:#111">🔴 Mandato Prolongado — 14+ anos ('+rowsConsec.length+' conselheiros com nomes disponíveis)</h4>'
-    +'<p style="font-size:11px;color:#6b7280;margin:0 0 10px">Ordenados por anos de mandato (decrescente). Ano "Desde" é estimativa: 2026 − anos declarados no FRE.</p>'
+    +'<h4 style="margin:0 0 10px;font-size:13px;color:#111">🔴 Independência Formalmente Declarada — Substancialmente Comprometida (14+ anos, '+rowsConsec.length+' casos identificados)</h4>'
+    +'<p style="font-size:11px;color:#374151;margin:0 0 10px">Todos ultrapassaram em 40–230% o limite de 10 anos do CP B3 01/2024. Ordenados por anos (decrescente). Ano "Desde" = estimativa.</p>'
     +tblConsec+'</div>';
 
-  // Section: aggregate notice for 8-13 year range
+  // Section: aggregate notice for 10-13 year range
   var secAgg='<div style="background:#fff;border:1px solid #92400e33;border-left:4px solid #92400e;border-radius:8px;padding:14px;margin-bottom:14px">'
-    +'<h4 style="margin:0 0 8px;font-size:13px;color:#111">🟡 Faixa 8–13 anos — sem detalhe nominal disponível</h4>'
-    +'<p style="font-size:11px;color:#374151;margin:0">O FRE 2026 registra <strong>'+(LV.long10||96)+' conselheiros independentes com 10+ anos</strong> e aproximadamente 130 estimados com 8+ anos, mas os dados brutos desta extração não contêm os nomes individuais desta faixa. '
-    +'Para acesso a esses nomes, é necessário processar o FRE de cada companhia individualmente no portal CVM (<a href="https://www.rad.cvm.gov.br" target="_blank" style="color:#0369a1">rad.cvm.gov.br</a>).</p>'
+    +'<h4 style="margin:0 0 8px;font-size:13px;color:#111">🟠 Acima do Limite B3 — Faixa 10–13 anos (46 casos adicionais sem detalhe nominal)</h4>'
+    +'<p style="font-size:11px;color:#374151;margin:0">Os dados do FRE 2026 registram <strong>'+(LV.long10||96)+' conselheiros independentes acima de 10 anos no total</strong>, dos quais apenas os 50 com 14+ anos constam com identificação nominal nesta extração. '
+    +'Os 46 restantes (faixa 10–13 anos) existem nos dados brutos mas sem mapeamento nominal concluído — o número real de independência comprometida é, portanto, maior. '
+    +'Para acesso completo: FRE por companhia em <a href="https://www.rad.cvm.gov.br" target="_blank" style="color:#0369a1">rad.cvm.gov.br</a>.</p>'
     +'</div>';
 
-  // Section: non-consecutive notice
+  // Section: note on consecutive vs non-consecutive
   var secNaoConsec='<div style="background:#fff;border:1px solid #6b728033;border-left:4px solid #6b7280;border-radius:8px;padding:14px;margin-bottom:14px">'
-    +'<h4 style="margin:0 0 8px;font-size:13px;color:#111">ℹ️ Mandato Não-Consecutivo — limitação da fonte</h4>'
-    +'<p style="font-size:11px;color:#374151;margin:0">O FRE declara apenas o <em>total acumulado</em> de anos de exercício — não há campo estruturado distinguindo períodos consecutivos de não-consecutivos. '
-    +'A distinção exigiria cruzamento histórico de FREs anteriores (2010–2026) por CNPJ + nome, o que não está contido nesta versão do Observatório. '
-    +'Todos os 50 conselheiros listados acima exerceram o cargo por tempo suficiente para superar o parâmetro de independência do CP B3 01/2024 (10 anos), independentemente da continuidade.</p>'
+    +'<h4 style="margin:0 0 8px;font-size:13px;color:#111">ℹ️ Sobre Consecutividade — o FRE não distingue, e isso não atenua o problema</h4>'
+    +'<p style="font-size:11px;color:#374151;margin:0">O FRE declara apenas o <em>total acumulado</em> de anos de exercício como independente na mesma companhia — sem separar períodos consecutivos de não-consecutivos. '
+    +'Mesmo que parte desses mandatos tenham tido uma pausa formal, o retorno à mesma empresa pelo mesmo controlador recria os vínculos que comprometem a independência. '
+    +'A distinção consecutivo/não-consecutivo exigiria cruzamento histórico de FREs anuais (2010–2026) por CNPJ + nome — trabalho possível mas fora do escopo desta versão. '
+    +'<strong>Em qualquer cenário, 14+ anos de presença na mesma empresa é incompatível com independência substantiva.</strong></p>'
     +'</div>';
 
   document.getElementById('longevidade-body').innerHTML=kpiRow+dataNota+sec14+secAgg+secNaoConsec;
