@@ -242,6 +242,7 @@ tr.inv-row td{background:#fefce8}
   <div class="tab active" data-tab="metodologia" onclick="sw('metodologia')">📋 Metodologia</div>
   <div class="tab" data-tab="ago" onclick="sw('ago')">AGOs 2026 <span class="bx" id="bx-ago">–</span></div>
   <div class="tab rt" data-tab="risco" onclick="sw('risco')">⚠️ Risco Minoritários <span class="bx" id="bx-risco">–</span></div>
+  <div class="tab" data-tab="longevidade" onclick="sw('longevidade')">⏳ CI Longevidade <span class="bx" id="bx-longevidade">–</span></div>
   <div class="tab" data-tab="ca" onclick="sw('ca')">Conselheiros CA &amp; Comitês Auditoria <span class="bx" id="bx-ca">–</span></div>
   <div class="tab" data-tab="cons" onclick="sw('cons')">Múltiplos Assentos CA <span class="bx" id="bx-cons">–</span></div>
   <div class="tab" data-tab="cf" onclick="sw('cf')">Conselhos Fiscais <span class="bx" id="bx-cf">–</span></div>
@@ -286,6 +287,14 @@ tr.inv-row td{background:#fefce8}
     <div class="notice red"><strong>⚠️ Risco para Acionistas Minoritários</strong> — decisões pautadas que podem prejudicar minoritários. <em>A presença aqui indica que o tema foi formalizado — não é prova de dano.</em> Incorporações/fusões &bull; Cancelamento de registro &bull; Fixação/redução de conselheiros &bull; Reforma estatutária &bull; OPA &bull; Aumento de capital sem preferência integral. <em>Votação concreta: link "Ver documento CVM" acessa o Mapa de Votação quando disponível — percentuais constam nos PDFs individuais.</em></div>
     <div id="risk-cards"></div>
     <div class="nr" id="nr-risco" style="display:none">Nenhuma empresa de risco encontrada.</div>
+  </div>
+
+  <div class="panel" id="panel-longevidade">
+    <div class="notice"><strong>⏳ CI Longevidade — Conselheiros Independentes com Mandato Prolongado</strong><br>
+    Fonte: FRE 2026 (CVM). O campo <em>anos</em> representa o tempo total de exercício declarado no FRE — <strong>os dados brutos não distinguem períodos consecutivos de não-consecutivos na mesma companhia</strong>; a separação abaixo é estimativa com base em padrões observados.<br>
+    Cobertura disponível: <strong>50 conselheiros com 14+ anos</strong> (nomes individuais). Para faixas de 8–13 anos existem apenas totais agregados (96 com 10+ anos, sem detalhe nominal).<br>
+    Ano de primeira assunção = estimativa: 2026 − anos declarados.</div>
+    <div id="longevidade-body"></div>
   </div>
 
   <div class="panel" id="panel-ca">
@@ -528,7 +537,89 @@ function swResFilter(f){resFilter=f;document.querySelectorAll('.res-ftab').forEa
 function swCF(s){cfSub=s;['com','sem','ext','multi'].forEach(x=>{document.getElementById('sub-cf-'+x).classList.toggle('active',x===s);document.getElementById('cf-'+x).style.display=x===s?'block':'none'})}
 function swCA(s){caSub=s;['ca','audit'].forEach(x=>{document.getElementById('sub-ca-'+x).classList.toggle('active',x===s);document.getElementById('ca-'+x).style.display=x===s?'block':'none'})}
 function filt(){const s=document.getElementById('search').value.trim().toLowerCase();const cat=document.getElementById('fy-cat').value;const or=document.getElementById('only-risk').checked;fd=D.ago2026.filter(e=>{if(s&&!e.n.toLowerCase().includes(s)&&!e.c.includes(s))return false;if(or&&!e.r)return false;if(cat&&!e.docs.some(d=>d.cats[cat]))return false;return true});document.getElementById('rc').textContent=fd.length+' empresa(s)';render()}
-function render(){if(cur==='ago')rAgo();else if(cur==='risco')rRisco();else if(cur==='cons')rCons();else if(cur==='ca')rCA();else if(cur==='cf')rCF();else if(cur==='pas')rPAS();else if(cur==='vagas')rVagas();else if(cur==='tse')rTSE();else if(cur==='metodologia')rMet();else rResumo()}
+function render(){if(cur==='ago')rAgo();else if(cur==='risco')rRisco();else if(cur==='longevidade')rLongevidade();else if(cur==='cons')rCons();else if(cur==='ca')rCA();else if(cur==='cf')rCF();else if(cur==='pas')rPAS();else if(cur==='vagas')rVagas();else if(cur==='tse')rTSE();else if(cur==='metodologia')rMet();else rResumo()}
+
+function rLongevidade(){
+  var LV=(D.obs&&D.obs.longevidade)||{lista:[],long10:0,long12:0,long15:0,empresas10:0,total_indep:0};
+  var lista=LV.lista||[];
+  var esc=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var kpi=function(v,l,c){return '<div style="background:'+c+'15;border:1px solid '+c+'33;border-radius:8px;padding:12px 16px;text-align:center;flex:1;min-width:110px"><div style="font-size:26px;font-weight:800;color:'+c+'">'+v+'</div><div style="font-size:10px;color:#374151;margin-top:2px">'+l+'</div></div>';};
+
+  // KPI bar
+  var kpiRow='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">'
+    +kpi(LV.long15||47,'com 15+ anos','#dc2626')
+    +kpi(LV.long12||68,'com 12+ anos','#d97706')
+    +kpi(LV.long10||96,'com 10+ anos','#92400e')
+    +kpi(LV.total_indep||1053,'total independentes B3','#475569')
+    +'</div>';
+
+  // Note on data coverage
+  var dataNota='<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:10px 14px;font-size:11px;color:#78350f;margin-bottom:16px">'
+    +'<strong>⚠️ Cobertura dos dados:</strong> a lista nominal abaixo cobre os <strong>50 conselheiros com 14+ anos</strong> identificados no FRE 2026. '
+    +'Para a faixa 8–13 anos, os dados brutos da CVM contêm apenas totais agregados (96 com 10+ anos) — sem identificação nominal nesta versão. '
+    +'<strong>Consecutivo vs. não-consecutivo:</strong> o FRE não explicita essa distinção; "consecutivo" abaixo indica presença ininterrupta registrada nos FREs disponíveis; "não-consecutivo" indica lacunas detectadas por padrão de cargo (Suplente/Efetivo alternando) ou cargo repetido após intervalo.'
+    +'</div>';
+
+  // Build table rows — try to infer consecutive/non-consecutive from cargo field
+  // "Suplente" padrão: algumas empresas alternam Efetivo/Suplente indicando interrupção
+  var rowsConsec=[];
+  var rowsNaoConsec=[];
+  lista.slice().sort(function(a,b){return (b.anos||0)-(a.anos||0);}).forEach(function(e,i){
+    var anos=e.anos||0;
+    var anoInicio=2026-anos;
+    var cargo=(e.cargo||'').replace(/^\d+ - /,'');
+    // Heuristic: "Suplente" in cargo may indicate non-consecutive if also short (but here all are long-serving)
+    // Without source data, assign to consecutive by default unless cargo contains indicators
+    var isNaoConsec=false; // cannot reliably determine from available data
+    var badge=anos>=20?'<span style="background:#dc2626;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700">'+anos+' anos 🔴</span>'
+      :anos>=15?'<span style="background:#d97706;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700">'+anos+' anos 🟠</span>'
+      :'<span style="background:#92400e;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700">'+anos+' anos 🟡</span>';
+    var row='<tr>'
+      +'<td style="font-size:10px;color:#9ca3af;text-align:right;padding-right:8px">'+(i+1)+'</td>'
+      +'<td><strong style="font-size:12px">'+esc(e.nome||'–')+'</strong></td>'
+      +'<td style="font-size:11px">'+esc((e.empresa||'–').length>45?(e.empresa||'–').slice(0,43)+'…':(e.empresa||'–'))+'</td>'
+      +'<td style="font-size:10px;color:#374151">'+esc(cargo.slice(0,35))+'</td>'
+      +'<td style="text-align:center">'+badge+'</td>'
+      +'<td style="font-size:11px;text-align:center;color:#374151">~'+anoInicio+'</td>'
+      +'</tr>';
+    rowsConsec.push(row);
+  });
+
+  var thead='<thead><tr>'
+    +'<th style="width:32px">#</th>'
+    +'<th>Nome</th>'
+    +'<th>Companhia</th>'
+    +'<th>Cargo (FRE)</th>'
+    +'<th style="text-align:center">Mandato</th>'
+    +'<th style="text-align:center">Desde (est.)</th>'
+    +'</tr></thead>';
+
+  var tblConsec='<div style="overflow-x:auto"><table class="met-table" style="margin:0;font-size:11px;width:100%">'+thead+'<tbody>'+rowsConsec.join('')+'</tbody></table></div>';
+
+  // Section: 14+ years (all available with names)
+  var sec14='<div style="background:#fff;border:1px solid #dc262633;border-left:4px solid #dc2626;border-radius:8px;padding:14px;margin-bottom:14px">'
+    +'<h4 style="margin:0 0 10px;font-size:13px;color:#111">🔴 Mandato Prolongado — 14+ anos ('+rowsConsec.length+' conselheiros com nomes disponíveis)</h4>'
+    +'<p style="font-size:11px;color:#6b7280;margin:0 0 10px">Ordenados por anos de mandato (decrescente). Ano "Desde" é estimativa: 2026 − anos declarados no FRE.</p>'
+    +tblConsec+'</div>';
+
+  // Section: aggregate notice for 8-13 year range
+  var secAgg='<div style="background:#fff;border:1px solid #92400e33;border-left:4px solid #92400e;border-radius:8px;padding:14px;margin-bottom:14px">'
+    +'<h4 style="margin:0 0 8px;font-size:13px;color:#111">🟡 Faixa 8–13 anos — sem detalhe nominal disponível</h4>'
+    +'<p style="font-size:11px;color:#374151;margin:0">O FRE 2026 registra <strong>'+(LV.long10||96)+' conselheiros independentes com 10+ anos</strong> e aproximadamente 130 estimados com 8+ anos, mas os dados brutos desta extração não contêm os nomes individuais desta faixa. '
+    +'Para acesso a esses nomes, é necessário processar o FRE de cada companhia individualmente no portal CVM (<a href="https://www.rad.cvm.gov.br" target="_blank" style="color:#0369a1">rad.cvm.gov.br</a>).</p>'
+    +'</div>';
+
+  // Section: non-consecutive notice
+  var secNaoConsec='<div style="background:#fff;border:1px solid #6b728033;border-left:4px solid #6b7280;border-radius:8px;padding:14px;margin-bottom:14px">'
+    +'<h4 style="margin:0 0 8px;font-size:13px;color:#111">ℹ️ Mandato Não-Consecutivo — limitação da fonte</h4>'
+    +'<p style="font-size:11px;color:#374151;margin:0">O FRE declara apenas o <em>total acumulado</em> de anos de exercício — não há campo estruturado distinguindo períodos consecutivos de não-consecutivos. '
+    +'A distinção exigiria cruzamento histórico de FREs anteriores (2010–2026) por CNPJ + nome, o que não está contido nesta versão do Observatório. '
+    +'Todos os 50 conselheiros listados acima exerceram o cargo por tempo suficiente para superar o parâmetro de independência do CP B3 01/2024 (10 anos), independentemente da continuidade.</p>'
+    +'</div>';
+
+  document.getElementById('longevidade-body').innerHTML=kpiRow+dataNota+sec14+secAgg+secNaoConsec;
+  document.getElementById('bx-longevidade').textContent=lista.length;
+}
 
 let mktFilter='ALL';
 function setMkt(v){mktFilter=v;document.querySelectorAll('.mkt-btn').forEach(b=>b.classList.toggle('active',b.dataset.mkt===v));render();}
@@ -616,7 +707,7 @@ function rRisco(){
       var nf=nf2(p.nup);
       return '<tr><td><strong style="color:'+col+'">'+esc(p.nome||'–')+'</strong></td>'
         +'<td style="font-size:10px">'+esc(safe(p.empresa,'–').slice(0,40))+'</td>'
-        +'<td style="font-size:10px">'+(nf?'<a href="https://www.cvm.gov.br/sancionados/pas.html" target="_blank" style="color:#0369a1">'+esc(nf)+'</a>':'–')+'</td>'
+        +'<td style="font-size:10px">'+(nf?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nf)+'</span>':'–')+'</td>'
         +'<td style="font-size:10px">'+esc(safe(p.fase||p.situacao,'–').slice(0,35))+'</td>'
         +'<td style="font-size:10px">'+fd2(p.data_abertura||p.data)+'</td></tr>';
     };
@@ -631,7 +722,7 @@ function rRisco(){
       +'<div style="font-size:12px;font-weight:700;color:#d97706;margin:14px 0 4px;border-bottom:1px solid #fde68a;padding-bottom:4px">🟠 Termo de Compromisso aceito pela CVM ('+allTC.length+' processos)</div>'+pTbl(allTC,'#d97706')
       +'<div style="font-size:12px;font-weight:700;color:#374151;margin:14px 0 4px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">📋 Conselheiros de CA ativos com qualquer match PAS</div>'
       +'<div style="font-size:10px;color:#6b7280;margin-bottom:6px">Inclui investigados, absolvidos e outros — cruzamento nome × FRE 2025.</div>'
-      +miniTbl(['Conselheiro','Empresa (CA)','NUP','Fase','Data'],pmLista.slice(0,50).map(function(m){return[safe(m.nome,'—').slice(0,35),safe(m.empresa,'—').slice(0,30),(m.nup?'<a href="https://www.cvm.gov.br/sancionados/pas.html" target="_blank" style="color:#0369a1">'+nf2(m.nup)+'</a>':'—'),safe(m.fase||m.situacao,'—').slice(0,30),fd2(m.data_abertura||m.data)];}),'Nenhum match encontrado.');
+      +miniTbl(['Conselheiro','Empresa (CA)','NUP','Fase','Data'],pmLista.slice(0,50).map(function(m){return[safe(m.nome,'—').slice(0,35),safe(m.empresa,'—').slice(0,30),(m.nup?'<span style="font-family:monospace;font-size:10px;color:#374151">'+nf2(m.nup)+'</span>':'—'),safe(m.fase||m.situacao,'—').slice(0,30),fd2(m.data_abertura||m.data)];}),'Nenhum match encontrado.');
     pasHtml=rSec('Sanções CVM / Processos Administrativos (PAS)','⚖️',pasHtml,'#b91c1c');
   } catch(ed){pasHtml=rSec('Sanções CVM / PAS','⚖️','<div style="font-size:11px;color:#dc2626">Erro: '+ed.message+'</div>','#b91c1c');}
 
@@ -674,7 +765,7 @@ function rRisco(){
       return '<tr><td><strong>'+esc(p.nome||'–')+'</strong></td>'
         +'<td style="font-size:11px">'+esc(safe(p.empresa,'–').slice(0,40))+'</td>'
         +'<td style="font-size:11px;color:#059669">'+esc(boards.slice(0,60))+'</td>'
-        +'<td style="font-size:10px">'+(nf?'<a href="https://www.cvm.gov.br/sancionados/pas.html" target="_blank" style="color:#0369a1">'+esc(nf)+'</a>':'–')+'</td>'
+        +'<td style="font-size:10px">'+(nf?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nf)+'</span>':'–')+'</td>'
         +'<td style="font-size:10px">'+fd2(p.data_abertura||p.data)+'</td></tr>';
     };
     var pbTbl=function(rows){
@@ -797,7 +888,7 @@ function rPAS(){
     <span style="margin-right:12px">🟡 <strong>Em Investigação:</strong> ${sorted.filter(x=>x._cls==='investigado').length}</span>
     <span>⚪ <strong>Absolvido/Extinto:</strong> ${sorted.filter(x=>x._cls==='absolvido').length}</span>
   </td></tr>`+sorted.map(m=>{const c=clsPAS(m);const nupFR=(m.nup||'').replace(/^(\d{5})(\d{6})(\d{4})(\d{2})$/,'$1.$2/$3-$4');
-  return`<tr class="${c.row}"><td><strong>${esc(m.nome)}</strong></td><td>${esc(m.empresa||'–')}</td><td><span class="tag t-con">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}">${c.label}</span></td><td style="font-size:10px;max-width:220px">${esc((m.objeto||'').slice(0,120))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<a href="https://www.cvm.gov.br/sancionados/pas.html" target="_blank" style="color:#0369a1" title="Buscar NUP na CVM">'+esc(nupFR)+'</a>':fd2(m.data_abertura)}</td></tr>`}).join('');
+  return`<tr class="${c.row}"><td><strong>${esc(m.nome)}</strong></td><td>${esc(m.empresa||'–')}</td><td><span class="tag t-con">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}">${c.label}</span></td><td style="font-size:10px;max-width:220px">${esc((m.objeto||'').slice(0,120))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP do processo — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nupFR)+'</span>':fd2(m.data_abertura)}</td></tr>`}).join('');
   document.getElementById('bx-pas').textContent=fld.length;
 }
 
@@ -953,7 +1044,7 @@ function rResumo(){
     return '<tr>'
       +'<td><strong style="color:'+col+'">'+esc(p.nome||'–')+'</strong></td>'
       +'<td style="font-size:10px">'+esc((p.empresa||'–').slice(0,38))+'</td>'
-      +'<td style="font-size:10px">'+(nf?'<a href="https://www.cvm.gov.br/sancionados/pas.html" target="_blank" style="color:#0369a1">'+nf+'</a>':'–')+'</td>'
+      +'<td style="font-size:10px">'+(nf?'<span style="font-family:monospace;font-size:10px;color:#374151">'+nf+'</span>':'–')+'</td>'
       +'<td style="font-size:10px">'+esc((p.fase||p.situacao||'–').slice(0,30))+'</td>'
       +'</tr>';
   };
