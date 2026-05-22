@@ -898,7 +898,9 @@ function clsPAS(m){
 function rPAS(){
   var s=document.getElementById('search').value.trim().toLowerCase();
   var all=D.pas_todos_matches;
-  var fld=s?all.filter(function(m){return m.nome.toLowerCase().indexOf(s)>=0||(m.empresa||'').toLowerCase().indexOf(s)>=0;}):all;
+  // Filtrar apenas entradas PAS válidas (com campo nome)
+  var pas=all.filter(function(m){return !!m.nome;});
+  var fld=s?pas.filter(function(m){return m.nome.toLowerCase().indexOf(s)>=0||(m.empresa||'').toLowerCase().indexOf(s)>=0;}):pas;
   var body=document.getElementById('pas-body');
   if(!fld.length){body.innerHTML='';document.getElementById('nr-pas').style.display='block';return;}
   document.getElementById('nr-pas').style.display='none';
@@ -906,7 +908,7 @@ function rPAS(){
   // ── 1. Agrupar por nome (normalizado) ────────────────────────────────────
   var groups={};
   fld.forEach(function(m){
-    var key=m.nome.trim().toUpperCase();
+    var key=(m.nome||'').trim().toUpperCase();if(!key)return;
     if(!groups[key]) groups[key]={nome:m.nome,items:[]};
     groups[key].items.push(m);
   });
