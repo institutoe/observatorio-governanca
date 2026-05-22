@@ -896,79 +896,126 @@ function clsPAS(m){
   return {row:'inv-row',tag:'t-investigado',label:'🟡 Em Investigação'};
 }
 function rPAS(){
-  const s=document.getElementById('search').value.trim().toLowerCase();
-  const fld=s?D.pas_todos_matches.filter(m=>m.nome.toLowerCase().includes(s)||(m.empresa||'').toLowerCase().includes(s)):D.pas_todos_matches;
-  const body=document.getElementById('pas-body');
-  if(!fld.length){body.innerHTML='';document.getElementById('nr-pas').style.display='block';return}
+  var s=document.getElementById('search').value.trim().toLowerCase();
+  var all=D.pas_todos_matches;
+  var fld=s?all.filter(function(m){return m.nome.toLowerCase().indexOf(s)>=0||(m.empresa||'').toLowerCase().indexOf(s)>=0;}):all;
+  var body=document.getElementById('pas-body');
+  if(!fld.length){body.innerHTML='';document.getElementById('nr-pas').style.display='block';return;}
   document.getElementById('nr-pas').style.display='none';
-  // ── Agrupar por indivíduo ──────────────────────────────────────────────────
-  const groups={};
-  fld.forEach(m=>{
-    const key=m.nome.trim().toUpperCase();
+
+  // ── 1. Agrupar por nome (normalizado) ────────────────────────────────────
+  var groups={};
+  fld.forEach(function(m){
+    var key=m.nome.trim().toUpperCase();
     if(!groups[key]) groups[key]={nome:m.nome,items:[]};
     groups[key].items.push(m);
   });
-  // Para cada grupo: mais recente data
-  Object.values(groups).forEach(g=>{
-    g.items.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+
+  // ── 2. Para cada grupo: ordenar itens do mais recente ao mais antigo ──────
+  var ord={condenado:0,tc:1,investigado:2,absolvido:3};
+  Object.keys(groups).forEach(function(k){
+    var g=groups[k];
+    g.items.sort(function(a,b){return (b.data||'').localeCompare(a.data||'');});
     g.latestDate=g.items[0].data||'';
-    g.cls=g.items[0]._cls||'investigado';
-    // prioridade de classe: condenado > tc > investigado > absolvido
-    const ord={'condenado':0,'tc':1,'investigado':2,'absolvido':3};
-    const bestCls=g.items.reduce((best,m)=>{const r=ord[m._cls||'investigado']||2;return r<ord[best]?m._cls||'investigado':best},'absolvido');
-    g.cls=bestCls;
-    g.tcIndeferido=g.items.some(m=>m._tc_indeferido);
+    // melhor classe do grupo
+    var best=3;
+    g.items.forEach(function(m){var r=ord[m._cls||'investigado'];if(r===undefined)r=2;if(r<best)best=r;});
+    var clsMap=['condenado','tc','investigado','absolvido'];
+    g.cls=clsMap[best];
+    g.tcIndeferido=g.items.some(function(m){return !!m._tc_indeferido;});
   });
-  // Ordenar grupos: cls DESC (sancionado primeiro), depois data DESC, depois nome alpha
-  const ord={'condenado':0,'tc':1,'investigado':2,'absolvido':3};
-  const groupList=Object.values(groups).sort((a,b)=>{
-    const co=(ord[a.cls]||2)-(ord[b.cls]||2);
-    if(co!==0) return co;
-    const dc=(b.latestDate||'').localeCompare(a.latestDate||'');
-    if(dc!==0) return dc;
-    return a.nome.localeCompare(b.nome);
+
+  // ── 3. Ordenar grupos: ano mais recente → alfabético ─────────────────────
+  var groupList=Object.keys(groups).map(function(k){return groups[k];});
+  groupList.sort(function(a,b){
+    // ano mais recente primeiro (compara os 4 primeiros chars da data)
+    var ya=(a.latestDate||'').slice(0,4);
+    var yb=(b.latestDate||'').slice(0,4);
+    if(yb!==ya) return yb.localeCompare(ya);
+    // mesmo ano: alfabético pelo nome
+    return a.nome.localeCompare(b.nome,'pt-BR',{sensitivity:'base'});
   });
-  // Totais únicos por pessoa
-  const uniq=groupList.length;
-  const condUniq=groupList.filter(g=>g.cls==='condenado').length;
-  const tcUniq=groupList.filter(g=>g.cls==='tc').length;
-  const invUniq=groupList.filter(g=>g.cls==='investigado').length;
-  const absUniq=groupList.filter(g=>g.cls==='absolvido').length;
-  const tcIndUniq=groupList.filter(g=>g.tcIndeferido).length;
-  body.innerHTML=`<tr style="background:#f8fafc"><td colspan="7" style="padding:8px 11px;font-size:11px;color:#475569">
-    <span style="margin-right:12px">🔴 <strong>com penalidade CVM aplicada:</strong> ${condUniq}</span>
-    <span style="margin-right:12px">🟠 <strong>Termo de Compromisso:</strong> ${tcUniq}</span>
-    <span style="margin-right:12px">🟡 <strong>Em Investigação:</strong> ${invUniq}</span>
-    ${tcIndUniq?`<span style="margin-right:12px">⚠️ <strong>TC Indeferido:</strong> ${tcIndUniq}</span>`:''}
-    <span>⚪ <strong>Absolvido/Extinto:</strong> ${absUniq}</span>
-    <span style="margin-left:12px;color:#6b7280">(${uniq} indivíduos, ${fld.length} processos)</span>
-  </td></tr>`+groupList.map(g=>{
-    // Se apenas um processo: linha simples
+
+  // ── 4. Contadores ─────────────────────────────────────────────────────────
+  var nCond=groupList.filter(function(g){return g.cls==='condenado';}).length;
+  var nTc=groupList.filter(function(g){return g.cls==='tc';}).length;
+  var nInv=groupList.filter(function(g){return g.cls==='investigado';}).length;
+  var nAbs=groupList.filter(function(g){return g.cls==='absolvido';}).length;
+  var nTcInd=groupList.filter(function(g){return g.tcIndeferido;}).length;
+
+  // ── 5. Helpers ────────────────────────────────────────────────────────────
+  function nupFmt(nup){return (nup||'').replace(/^(\d{5})(\d{6})(\d{4})(\d{2})$/,'$1.$2/$3-$4');}
+  function orgaoShort(o){return (o||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ','');}
+  function faseShort(f){
+    var s=f||'';
+    if(s.indexOf('Citação')>=0) return 'Citação e defesas';
+    if(s.indexOf('Julgamento')>=0) return 'Julgamento';
+    if(s.indexOf('Instrução')>=0) return 'Instrução';
+    if(s.indexOf('Inquérito')>=0) return 'Inquérito';
+    if(s.indexOf('Recurso')>=0) return 'Recurso';
+    if(s.indexOf('Encerrado')>=0||s.indexOf('Arquiv')>=0) return 'Encerrado';
+    return s.slice(0,30)||'–';
+  }
+
+  // ── 6. Render ─────────────────────────────────────────────────────────────
+  var html='<tr style="background:#f8fafc"><td colspan="7" style="padding:8px 11px;font-size:11px;color:#475569">';
+  html+='<span style="margin-right:12px">🔴 <strong>com penalidade CVM:</strong> '+nCond+'</span>';
+  html+='<span style="margin-right:12px">🟠 <strong>Termo de Compromisso:</strong> '+nTc+'</span>';
+  html+='<span style="margin-right:12px">🟡 <strong>Em Investigação:</strong> '+nInv+'</span>';
+  if(nTcInd) html+='<span style="margin-right:12px">⚠️ <strong>TC Indeferido:</strong> '+nTcInd+'</span>';
+  html+='<span>⚪ <strong>Absolvido/Extinto:</strong> '+nAbs+'</span>';
+  html+='<span style="margin-left:12px;color:#6b7280">('+groupList.length+' pessoas, '+fld.length+' processos)</span>';
+  html+='</td></tr>';
+
+  groupList.forEach(function(g){
+    var c=clsPAS({_cls:g.cls});
     if(g.items.length===1){
-      const m=g.items[0];
-      const c=clsPAS(m);
-      const nupFR=(m.nup||'').replace(/^(\d{5})(\d{6})(\d{4})(\d{2})$/,'$1.$2/$3-$4');
-      const tcBadge=m._tc_indeferido?'<br><span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:3px;display:inline-block">⚠️ TC Indeferido 20/05/2025</span>':'';
-      const notaTip=m._tc_nota?` title="${m._tc_nota.replace(/"/g,'&quot;')}"`:'';
-      const faseShort=m._tc_indeferido?(m.fase||'').replace('Citação e envio de defesas','Citação e defesas'):'';
-      const faseCell=faseShort?`<td style="font-size:10px;color:#92400e;white-space:nowrap;font-style:italic">${esc(faseShort)}</td>`:'<td></td>';
-      return`<tr class="${c.row}"><td><strong>${esc(m.nome)}</strong>${tcBadge}</td><td>${esc(m.empresa||'–')}</td><td><span class="tag t-con">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}"${notaTip}>${c.label}</span></td><td style="font-size:10px;max-width:200px">${esc((m.objeto||'').slice(0,110))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nupFR)+'</span>':fd2(m.data_abertura)}</td>${faseCell}</tr>`;
+      // ── linha única ───────────────────────────────────────────────────────
+      var m=g.items[0];
+      var cm=clsPAS(m);
+      var nup=nupFmt(m.nup);
+      var fase=faseShort(m.fase);
+      var tcBadge=m._tc_indeferido?'<br><span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:3px;display:inline-block">⚠️ TC Indeferido</span>':'';
+      var faseStyle=m._tc_indeferido?'font-size:10px;color:#92400e;white-space:nowrap;font-style:italic':'font-size:10px;color:#6b7280;white-space:nowrap';
+      html+='<tr class="'+cm.row+'">';
+      html+='<td><strong>'+esc(m.nome)+'</strong>'+tcBadge+'</td>';
+      html+='<td style="font-size:11px">'+esc(m.empresa||'–')+'</td>';
+      html+='<td><span class="tag t-con" style="font-size:9px">'+esc(orgaoShort(m.orgao))+'</span></td>';
+      html+='<td><span class="tag '+cm.tag+'" style="font-size:9px">'+cm.label+'</span></td>';
+      html+='<td style="font-size:10px;max-width:200px">'+esc((m.objeto||'').slice(0,110))+'…</td>';
+      html+='<td style="font-size:10px;white-space:nowrap">'+(nup?'<span style="font-family:monospace;font-size:9px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nup)+'</span>':fd2(m.data_abertura))+'</td>';
+      html+='<td style="'+faseStyle+'">'+esc(fase)+'</td>';
+      html+='</tr>';
+    } else {
+      // ── cabeçalho do grupo ────────────────────────────────────────────────
+      var tcBadgeG=g.tcIndeferido?'<span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px">⚠️ TC Indeferido</span>':'';
+      html+='<tr style="background:#eef2ff;border-top:2px solid #c7d2fe">';
+      html+='<td colspan="7" style="padding:6px 11px;font-size:11px;font-weight:700;color:#1e3a8a">';
+      html+=esc(g.nome)+tcBadgeG;
+      html+=' <span class="tag '+c.tag+'" style="font-size:9px;margin-left:4px">'+c.label+'</span>';
+      html+=' <span style="color:#6b7280;font-weight:400">('+g.items.length+' processos)</span>';
+      html+='</td></tr>';
+      // ── sub-linhas ────────────────────────────────────────────────────────
+      g.items.forEach(function(m){
+        var cm=clsPAS(m);
+        var nup=nupFmt(m.nup);
+        var fase=faseShort(m.fase);
+        var tcBadge=m._tc_indeferido?'<span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px">⚠️ TC Ind.</span>':'';
+        var faseStyle=m._tc_indeferido?'font-size:10px;color:#92400e;white-space:nowrap;font-style:italic':'font-size:10px;color:#6b7280;white-space:nowrap';
+        html+='<tr class="'+cm.row+'" style="background:#f8f9ff">';
+        html+='<td style="padding-left:18px;font-size:10px;color:#374151">↳ '+fd2(m.data||m.data_abertura)+tcBadge+'</td>';
+        html+='<td style="font-size:10px">'+esc(m.empresa||'–')+'</td>';
+        html+='<td><span class="tag t-con" style="font-size:9px">'+esc(orgaoShort(m.orgao))+'</span></td>';
+        html+='<td><span class="tag '+cm.tag+'" style="font-size:9px">'+cm.label+'</span></td>';
+        html+='<td style="font-size:10px;max-width:200px;color:#374151">'+esc((m.objeto||'').slice(0,100))+'…</td>';
+        html+='<td style="font-size:10px;white-space:nowrap">'+(nup?'<span style="font-family:monospace;font-size:9px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nup)+'</span>':fd2(m.data_abertura))+'</td>';
+        html+='<td style="'+faseStyle+'">'+esc(fase)+'</td>';
+        html+='</tr>';
+      });
     }
-    // Múltiplos processos: linha-cabeçalho + sub-linhas
-    const cG=clsPAS({_cls:g.cls});
-    const tcBadgeG=g.tcIndeferido?'<span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px">⚠️ TC Indeferido</span>':'';
-    let rows=`<tr style="background:#f0f4ff;border-top:2px solid #c7d2fe"><td colspan="7" style="padding:6px 11px;font-size:11px;font-weight:700;color:#1e3a8a">${esc(g.nome)}${tcBadgeG} <span class="tag ${cG.tag}" style="font-size:9px;margin-left:4px">${cG.label}</span> <span style="color:#6b7280;font-weight:400">(${g.items.length} processos)</span></td></tr>`;
-    g.items.forEach(m=>{
-      const c=clsPAS(m);
-      const nupFR=(m.nup||'').replace(/^(\d{5})(\d{6})(\d{4})(\d{2})$/,'$1.$2/$3-$4');
-      const tcBadge=m._tc_indeferido?'<br><span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:2px;display:inline-block">⚠️ TC Indeferido 20/05/2025</span>':'';
-      const notaTip=m._tc_nota?` title="${m._tc_nota.replace(/"/g,'&quot;')}"`:'';
-      const faseShortS=m._tc_indeferido?(m.fase||'').replace('Citação e envio de defesas','Citação e defesas'):'';
-      const faseCellS=faseShortS?`<td style="font-size:10px;color:#92400e;white-space:nowrap">${esc(faseShortS)}</td>`:'<td></td>';
-      rows+=`<tr class="${c.row}" style="padding-left:20px"><td style="padding-left:22px"><span style="color:#6b7280;font-size:10px">↳</span> ${esc(m.empresa||'–')}${tcBadge}</td><td><span class="tag t-con" style="font-size:9px">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}"${notaTip} style="font-size:9px">${c.label}</span></td><td style="font-size:10px;max-width:200px;color:#374151">${esc((m.objeto||'').slice(0,100))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nupFR)+'</span>':fd2(m.data_abertura)}</td><td style="font-size:10px;color:#6b7280">${fd2(m.data||m.data_abertura)}</td>${faseCellS}</tr>`;
-    });
-    return rows;
-  }).join('');
+  });
+
+  body.innerHTML=html;
   document.getElementById('bx-pas').textContent=fld.length;
 }
 
