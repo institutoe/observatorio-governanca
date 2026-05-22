@@ -221,7 +221,8 @@ tr.inv-row td{background:#fefce8}
     </div>
     <div class="brand-text">
       <h1>Observatório Governança Corporativa — AGOs B3 2026</h1>
-      <p>Governança corporativa &middot; Proteção de acionistas minoritários &middot; Conselhos de Administração &middot; Comitês de Auditoria &middot; Conselhos Fiscais</p>
+      <p style="margin:0 0 3px;font-size:13px;font-weight:600;color:#1e3a8a">Forum de Conselheiros Independentes &middot; <a href="https://www.conselheirosindependentes.com" target="_blank" style="color:#1e3a8a;text-decoration:none">www.conselheirosindependentes.com</a></p>
+      <p style="margin:0;font-size:11px">Governança corporativa &middot; Proteção de acionistas minoritários &middot; Conselhos de Administração &middot; Comitês de Auditoria &middot; Conselhos Fiscais</p>
     </div>
     <div class="brand-right">
       <div class="src">Fonte: dados.cvm.gov.br · IPE · FRE · PAS</div>
@@ -330,7 +331,24 @@ tr.inv-row td{background:#fefce8}
   <div class="panel" id="panel-pas">
     <div class="notice red"><strong>⚠️ Aviso crítico:</strong> Cruzamento PAS CVM × FRE feito <strong>por nome</strong> (dataset PAS não disponibiliza CPF). Homônimos geram falsos positivos. A presença aqui NÃO é prova de condenação. Consulte: <a href="https://sistemas.cvm.gov.br/?PAS" target="_blank" rel="noopener" style="color:var(--red)">sistemas.cvm.gov.br/?PAS</a></div>
     <div class="notice warn"><strong>Ações criminais e inquéritos:</strong> Não há base aberta para cruzamento automatizado. Verificação exige consulta individual ao BNMP e Tribunais estaduais.</div>
-    <div class="tw"><table><thead><tr><th>Nome (match FRE)</th><th>Empresa</th><th>Órgão</th><th>Fase PAS</th><th>Objeto</th><th>Abertura</th></tr></thead><tbody id="pas-body"></tbody></table>
+    <div class="tw"><table><colgroup>
+  <col style="width:18%">
+  <col style="width:11%">
+  <col style="width:9%">
+  <col style="width:10%">
+  <col style="width:28%">
+  <col style="width:12%">
+  <col style="width:12%">
+</colgroup>
+<thead><tr>
+  <th>Nome</th>
+  <th>Empresa</th>
+  <th>Órgão</th>
+  <th>Status CVM</th>
+  <th>Objeto</th>
+  <th>NUP / Abertura</th>
+  <th>Fase do processo</th>
+</tr></thead><tbody id="pas-body"></tbody></table>
     <div class="nr" id="nr-pas" style="display:none">Sem matches.</div></div>
   </div>
 
@@ -917,7 +935,7 @@ function rPAS(){
   const invUniq=groupList.filter(g=>g.cls==='investigado').length;
   const absUniq=groupList.filter(g=>g.cls==='absolvido').length;
   const tcIndUniq=groupList.filter(g=>g.tcIndeferido).length;
-  body.innerHTML=`<tr style="background:#f8fafc"><td colspan="6" style="padding:8px 11px;font-size:11px;color:#475569">
+  body.innerHTML=`<tr style="background:#f8fafc"><td colspan="7" style="padding:8px 11px;font-size:11px;color:#475569">
     <span style="margin-right:12px">🔴 <strong>com penalidade CVM aplicada:</strong> ${condUniq}</span>
     <span style="margin-right:12px">🟠 <strong>Termo de Compromisso:</strong> ${tcUniq}</span>
     <span style="margin-right:12px">🟡 <strong>Em Investigação:</strong> ${invUniq}</span>
@@ -932,18 +950,22 @@ function rPAS(){
       const nupFR=(m.nup||'').replace(/^(\d{5})(\d{6})(\d{4})(\d{2})$/,'$1.$2/$3-$4');
       const tcBadge=m._tc_indeferido?'<br><span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:3px;display:inline-block">⚠️ TC Indeferido 20/05/2025</span>':'';
       const notaTip=m._tc_nota?` title="${m._tc_nota.replace(/"/g,'&quot;')}"`:'';
-      return`<tr class="${c.row}"><td><strong>${esc(m.nome)}</strong>${tcBadge}</td><td>${esc(m.empresa||'–')}</td><td><span class="tag t-con">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}"${notaTip}>${c.label}</span></td><td style="font-size:10px;max-width:220px">${esc((m.objeto||'').slice(0,120))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nupFR)+'</span>':fd2(m.data_abertura)}</td></tr>`;
+      const faseShort=m._tc_indeferido?(m.fase||'').replace('Citação e envio de defesas','Citação e defesas'):'';
+      const faseCell=faseShort?`<td style="font-size:10px;color:#92400e;white-space:nowrap;font-style:italic">${esc(faseShort)}</td>`:'<td></td>';
+      return`<tr class="${c.row}"><td><strong>${esc(m.nome)}</strong>${tcBadge}</td><td>${esc(m.empresa||'–')}</td><td><span class="tag t-con">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}"${notaTip}>${c.label}</span></td><td style="font-size:10px;max-width:200px">${esc((m.objeto||'').slice(0,110))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nupFR)+'</span>':fd2(m.data_abertura)}</td>${faseCell}</tr>`;
     }
     // Múltiplos processos: linha-cabeçalho + sub-linhas
     const cG=clsPAS({_cls:g.cls});
     const tcBadgeG=g.tcIndeferido?'<span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:6px">⚠️ TC Indeferido</span>':'';
-    let rows=`<tr style="background:#f0f4ff;border-top:2px solid #c7d2fe"><td colspan="6" style="padding:6px 11px;font-size:11px;font-weight:700;color:#1e3a8a">${esc(g.nome)}${tcBadgeG} <span class="tag ${cG.tag}" style="font-size:9px;margin-left:4px">${cG.label}</span> <span style="color:#6b7280;font-weight:400">(${g.items.length} processos)</span></td></tr>`;
+    let rows=`<tr style="background:#f0f4ff;border-top:2px solid #c7d2fe"><td colspan="7" style="padding:6px 11px;font-size:11px;font-weight:700;color:#1e3a8a">${esc(g.nome)}${tcBadgeG} <span class="tag ${cG.tag}" style="font-size:9px;margin-left:4px">${cG.label}</span> <span style="color:#6b7280;font-weight:400">(${g.items.length} processos)</span></td></tr>`;
     g.items.forEach(m=>{
       const c=clsPAS(m);
       const nupFR=(m.nup||'').replace(/^(\d{5})(\d{6})(\d{4})(\d{2})$/,'$1.$2/$3-$4');
       const tcBadge=m._tc_indeferido?'<br><span style="background:#92400e;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:2px;display:inline-block">⚠️ TC Indeferido 20/05/2025</span>':'';
       const notaTip=m._tc_nota?` title="${m._tc_nota.replace(/"/g,'&quot;')}"`:'';
-      rows+=`<tr class="${c.row}" style="padding-left:20px"><td style="padding-left:22px"><span style="color:#6b7280;font-size:10px">↳</span> ${esc(m.empresa||'–')}${tcBadge}</td><td><span class="tag t-con" style="font-size:9px">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}"${notaTip} style="font-size:9px">${c.label}</span></td><td style="font-size:10px;max-width:220px;color:#374151">${esc((m.objeto||'').slice(0,100))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nupFR)+'</span>':fd2(m.data_abertura)}</td><td style="font-size:10px;color:#6b7280">${fd2(m.data||m.data_abertura)}</td></tr>`;
+      const faseShortS=m._tc_indeferido?(m.fase||'').replace('Citação e envio de defesas','Citação e defesas'):'';
+      const faseCellS=faseShortS?`<td style="font-size:10px;color:#92400e;white-space:nowrap">${esc(faseShortS)}</td>`:'<td></td>';
+      rows+=`<tr class="${c.row}" style="padding-left:20px"><td style="padding-left:22px"><span style="color:#6b7280;font-size:10px">↳</span> ${esc(m.empresa||'–')}${tcBadge}</td><td><span class="tag t-con" style="font-size:9px">${esc((m.orgao||'').replace('Pertence apenas ao ','').replace('Pertence à Diretoria e ao ',''))}</span></td><td><span class="tag ${c.tag}"${notaTip} style="font-size:9px">${c.label}</span></td><td style="font-size:10px;max-width:200px;color:#374151">${esc((m.objeto||'').slice(0,100))}…</td><td style="font-size:10px;white-space:nowrap">${nupFR?'<span style="font-family:monospace;font-size:10px;color:#374151" title="NUP — buscar em cvm.gov.br/sancionados/pas.html">'+esc(nupFR)+'</span>':fd2(m.data_abertura)}</td><td style="font-size:10px;color:#6b7280">${fd2(m.data||m.data_abertura)}</td>${faseCellS}</tr>`;
     });
     return rows;
   }).join('');
