@@ -210,6 +210,68 @@ tr.inv-row td{background:#fefce8}
 
 .res-ftab.active{background:#2563eb!important;color:#fff!important;border-color:#2563eb!important;}
 .res-ftab[data-f="b3"].active{background:#7c3aed!important;border-color:#7c3aed!important;}
+/* ════════════════════════════════════════════
+   REDESIGN 2026 — Margens · Hero · Forum · Imprensa
+   ════════════════════════════════════════════ */
+
+/* Painel externo (vagas/tse/metodologia/destaques são filhos diretos do body) */
+body>.panel{padding:14px 32px}
+
+/* Ritmo horizontal uniforme — 32 px */
+.main{padding:14px 32px}
+.tabs{padding:0 32px}
+.mkt-filter{padding:6px 32px;display:flex;gap:6px;flex-wrap:wrap}
+.ctrl{padding:10px 32px}
+
+/* Segurança de texto — evita overflow em tabelas e cards */
+td,th{word-break:break-word;overflow-wrap:break-word}
+.cn,.pi,.vg-nome,.tag{word-break:break-word;overflow-wrap:break-word}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.vg-card h5{word-break:break-word;overflow-wrap:break-word}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#1a3560 0%,#2563a8 100%);padding:20px 32px}
+.hero-inner{display:flex;gap:24px;align-items:stretch;flex-wrap:wrap}
+.hero-kpis{display:flex;gap:0;flex:1;align-items:center;flex-wrap:wrap}
+.hero-kpi{padding:6px 28px 6px 0;border-right:1px solid rgba(255,255,255,.18);margin-right:4px;flex-shrink:0}
+.hero-kpi:last-child{border-right:none;padding-right:0}
+.hk-v{font-size:44px;font-weight:800;line-height:1;color:#fff;letter-spacing:-1px}
+.hk-l{font-size:11px;color:rgba(255,255,255,.72);margin-top:4px;line-height:1.35;max-width:130px}
+.hero-cta{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:14px 18px;min-width:240px;max-width:290px;display:flex;flex-direction:column;gap:10px}
+.hc-title{font-size:12px;font-weight:700;color:#fff;line-height:1.3}
+.hc-text{font-size:11px;color:rgba(255,255,255,.78);line-height:1.55;flex:1}
+a.hc-btn{display:block;background:#fff;color:#1a3560;text-align:center;padding:8px 14px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;transition:opacity .15s}
+a.hc-btn:hover{opacity:.88}
+
+/* ── Forum banner (dentro do painel Vagas) ── */
+.forum-banner{background:#eef4fd;border:1px solid #c3d8f0;border-radius:9px;padding:13px 18px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.fb-text{flex:1;font-size:12px;color:#1e3a5f;line-height:1.55;min-width:200px}
+.fb-text strong{color:#1a3560}
+a.fb-link{background:#1a3560;color:#fff;padding:8px 16px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0}
+a.fb-link:hover{opacity:.85}
+
+/* ── Destaques Imprensa ── */
+.destaque-card{background:#fff;border:1px solid var(--border);border-left:4px solid var(--azul2);border-radius:9px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.dk-num{font-size:10px;font-weight:700;color:var(--azul2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.dk-title{font-size:14px;font-weight:700;color:var(--azul);margin-bottom:7px;line-height:1.35}
+.dk-text{font-size:12px;color:#374151;line-height:1.65}
+.dk-meta{font-size:10px;color:var(--gray);margin-top:9px;padding-top:8px;border-top:1px solid var(--border)}
+
+/* ── Rodapé ── */
+.site-footer{background:var(--azul);color:rgba(255,255,255,.68);text-align:center;padding:20px 32px;font-size:11px;margin-top:28px;line-height:1.8}
+.site-footer a{color:rgba(255,255,255,.85);text-decoration:none}
+.site-footer strong{color:#fff}
+
+/* ── Impressão ── */
+@media print{
+  .tabs,.mkt-filter,.ctrl,.hero-cta,.forum-banner,.site-footer{display:none!important}
+  .panel{display:block!important}
+  .main{padding:8px}
+  body>.panel{padding:8px}
+  .hero{background:#f0f4f8!important;padding:12px 20px}
+  .hk-v{color:#1a3560!important;font-size:28px}
+  .hk-l{color:#555!important}
+}
 </style>
 </head>
 <body>
@@ -239,18 +301,47 @@ tr.inv-row td{background:#fefce8}
   </div>
 </div>
 
+<div class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-kpis">
+      <div class="hero-kpi">
+        <div class="hk-v">1.363</div>
+        <div class="hk-l">Assentos a preencher nas assembleias de 2027</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-v">277</div>
+        <div class="hk-l">Eleições realizadas nas AGOs de 2026</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-v" id="hero-emp">–</div>
+        <div class="hk-l">Companhias abertas monitoradas pelo Observatório</div>
+      </div>
+      <div class="hero-kpi">
+        <div class="hk-v">342</div>
+        <div class="hk-l">Empresas listadas na B3 com cobertura plena</div>
+      </div>
+    </div>
+    <div class="hero-cta">
+      <div class="hc-title">🏛️ Forum de Conselheiros Independentes</div>
+      <div class="hc-text">O Instituto Empresa conecta conselheiros independentes qualificados a companhias em processo de renovação. Participação gratuita e aberta.</div>
+      <a class="hc-btn" href="https://www.conselheirosindependentes.com" target="_blank" rel="noopener">Conhecer o Forum →</a>
+    </div>
+  </div>
+</div>
+
 <div class="tabs">
-  <div class="tab active" data-tab="metodologia" onclick="sw('metodologia')">📋 Metodologia</div>
-  <div class="tab" data-tab="ago" onclick="sw('ago')">AGOs 2026 <span class="bx" id="bx-ago">–</span></div>
+  <div class="tab active" data-tab="ago" onclick="sw('ago')">AGOs 2026 <span class="bx" id="bx-ago">–</span></div>
+  <div class="tab" data-tab="vagas" onclick="sw('vagas')">🗓 Vagas em Conselhos <span class="bx" id="bx-vagas">–</span></div>
+  <div class="tab" data-tab="resumo" onclick="sw('resumo')">Estatísticas</div>
   <div class="tab rt" data-tab="risco" onclick="sw('risco')">⚠️ Risco Minoritários <span class="bx" id="bx-risco">–</span></div>
   <div class="tab" data-tab="longevidade" onclick="sw('longevidade')">⏳ CI Longevidade <span class="bx" id="bx-longevidade">–</span></div>
   <div class="tab" data-tab="ca" onclick="sw('ca')">Conselheiros CA &amp; Comitês Auditoria <span class="bx" id="bx-ca">–</span></div>
   <div class="tab" data-tab="cons" onclick="sw('cons')">Múltiplos Assentos CA <span class="bx" id="bx-cons">–</span></div>
   <div class="tab" data-tab="cf" onclick="sw('cf')">Conselhos Fiscais <span class="bx" id="bx-cf">–</span></div>
   <div class="tab rt" data-tab="pas" onclick="sw('pas')">PAS CVM <span class="bx" id="bx-pas">–</span></div>
-  <div class="tab" data-tab="vagas" onclick="sw('vagas')">🗓 Vagas em Conselhos <span class="bx" id="bx-vagas">–</span></div>
   <div class="tab" data-tab="tse" onclick="sw('tse')">🗳 Vínculos Políticos <span class="bx" id="bx-tse">55</span></div>
-  <div class="tab" data-tab="resumo" onclick="sw('resumo')">Estatísticas</div>
+  <div class="tab" data-tab="destaques" onclick="sw('destaques')">📰 Destaques Imprensa</div>
+  <div class="tab" data-tab="metodologia" onclick="sw('metodologia')">📋 Metodologia</div>
 </div>
 
 <div class="mkt-filter">
@@ -364,6 +455,10 @@ tr.inv-row td{background:#fefce8}
 
 
 <div class="panel" id="panel-vagas">
+  <div class="forum-banner">
+    <div class="fb-text"><strong>🏛️ Forum de Conselheiros Independentes</strong> — Quer ser cogitado para uma dessas vagas? O Forum do Instituto Empresa articula a apresentação de conselheiros independentes qualificados junto a companhias em processo de renovação. Participação gratuita e aberta.</div>
+    <a class="fb-link" href="https://www.conselheirosindependentes.com" target="_blank" rel="noopener">Participar do Forum →</a>
+  </div>
   <div class="notice"><strong>Mapa de Vagas em Conselhos de Administração</strong> — Mandatos calculados a partir do FRE 2025-2026. Datas aproximadas: o efetivo encerramento ocorre na RCA subsequente à AGO do ano indicado. Use como radar prospectivo.</div>
   <div class="vg-tabs">
     <div class="vg-tab active" id="vgtab-2026" onclick="swVG('2026')">⏰ Vagas em 2026 <span class="bx" id="bx-v26">–</span></div>
@@ -402,6 +497,50 @@ tr.inv-row td{background:#fefce8}
     </tr></thead>
     <tbody id="tse-body"><tr><td colspan="6" class="nr">Carregando…</td></tr></tbody>
   </table>
+  </div>
+</div>
+
+<div class="panel" id="panel-destaques">
+  <div class="notice"><strong>📰 Destaques para Imprensa</strong> — Principais achados do Observatório Governança Corporativa 2026. Todos os dados extraídos de fontes públicas: FRE, IPE, DFP (CVM) e base PAS. Imprecisões podem ser comunicadas para <a href="mailto:instituto@institutoempresa.com.br">instituto@institutoempresa.com.br</a> e serão retificadas imediatamente quando possível.</div>
+
+  <div class="destaque-card">
+    <div class="dk-num">Achado 1 · Mercado de Conselhos</div>
+    <div class="dk-title">1.363 assentos em disputa nas assembleias de 2027</div>
+    <div class="dk-text">O Observatório identificou <strong>1.363 mandatos</strong> em conselhos de administração de companhias abertas brasileiras com vencimento previsto para 2027. Em 2026, foram realizadas <strong>277 eleições</strong> em assembleias gerais ordinárias. O volume revela uma janela expressiva de renovação ainda pouco explorada por conselheiros independentes sem vínculos com o grupo controlador.</div>
+    <div class="dk-meta">Fonte: FRE 2025-2026 (CVM) · Metodologia: mandatos declarados × data-fim estimada a partir da AGO do ano indicado</div>
+  </div>
+
+  <div class="destaque-card">
+    <div class="dk-num">Achado 2 · Independência</div>
+    <div class="dk-title">82 companhias analisadas não têm nenhum conselheiro independente</div>
+    <div class="dk-text">Das empresas com FRE 2026 analisadas, <strong>82 não registram qualquer conselheiro declarado como independente</strong>. Outras <strong>96 têm menos do que os 20% exigidos</strong> pela Resolução CVM 23/2021 para emissores de categoria A. Combinadas, representam parcela expressiva das companhias operando abaixo do mínimo regulatório de proteção ao acionista minoritário.</div>
+    <div class="dk-meta">Fonte: FRE 2026 (campo independência autodeclarado) · Norma: Res. CVM 23/2021, art. 16 · Nota: independência é autodeclarada — não é auditada automaticamente pela CVM</div>
+  </div>
+
+  <div class="destaque-card">
+    <div class="dk-num">Achado 3 · Diversidade de Gênero</div>
+    <div class="dk-title">47,5% dos conselhos de companhias abertas não têm nenhuma mulher</div>
+    <div class="dk-text">Em <strong>329 das 692 companhias</strong> com dados de gênero disponíveis no FRE, não há qualquer mulher no conselho de administração. A média de participação feminina é de apenas <strong>13,6%</strong> dos assentos (566 mulheres em 3.670 postos). O quadro é particularmente grave entre empresas menores e naquelas sem obrigação de divulgação de metas de diversidade.</div>
+    <div class="dk-meta">Fonte: FRE 2025-2026 (CVM) · Campo: gênero declarado pelos próprios conselheiros</div>
+  </div>
+
+  <div class="destaque-card">
+    <div class="dk-num">Achado 4 · Sanções CVM</div>
+    <div class="dk-title">12 conselheiros com penalidade CVM registrada figuram em mandatos ativos em 2026</div>
+    <div class="dk-text">O cruzamento da base de Processos Administrativos Sancionadores (PAS) da CVM com o FRE 2026 identificou <strong>12 indivíduos com penalidade CVM aplicada</strong> com mandato vigente em conselhos de administração de companhias abertas. <em>Aviso crítico: o cruzamento é feito por nome — o dataset PAS não disponibiliza CPF. Homônimos são possíveis. Cada caso exige verificação individual no portal CVM.</em> O resultado indica ausência de mecanismo automático de alerta que impeça a recondução de conselheiros sancionados.</div>
+    <div class="dk-meta">Fonte: base PAS CVM (<a href="https://sistemas.cvm.gov.br/?PAS" target="_blank" style="color:var(--azul2)">sistemas.cvm.gov.br/?PAS</a>) × FRE 2026</div>
+  </div>
+
+  <div class="destaque-card">
+    <div class="dk-num">Achado 5 · Longevidade e Independência Substantiva</div>
+    <div class="dk-title">18,4% dos mandatos ativos têm 8 ou mais anos ininterruptos na mesma companhia</div>
+    <div class="dk-text">De <strong>3.639 mandatos ativos</strong> analisados, <strong>671 (18,4%) têm duração de 8 anos ou mais</strong> na mesma companhia e <strong>389 (10,7%) ultrapassam 12 anos</strong> consecutivos. O Comunicado ao Mercado B3 nº 01/2024 e o Código de Melhores Práticas do IBGC adotam 10 anos como referência crítica para a independência substantiva. Conselheiros formalmente classificados como independentes no FRE podem ter a sua independência <em>substantiva</em> comprometida pela longa permanência e pelos vínculos informais acumulados com o controlador ao longo dos anos.</div>
+    <div class="dk-meta">Fonte: FRE 2025-2026 · Campo: data de início do mandato · Referência: CM B3 nº 01/2024; IBGC CMPA 6ª ed., seção 3.4</div>
+  </div>
+
+  <div style="margin-top:20px;padding:14px 18px;background:#f8f9fa;border-radius:8px;border:1px solid var(--border);font-size:12px;color:#374151;line-height:1.65">
+    <strong>Para imprensa, pesquisadores e companhias:</strong> O Observatório Governança Corporativa é uma iniciativa gratuita e aberta do <strong>Instituto Empresa</strong>, por meio do <strong>Forum de Conselheiros Independentes</strong>. Todos os dados são públicos e estão disponíveis na CVM. Novos achados serão divulgados por meio de webinars, eventos e publicações do Forum.<br>
+    Contato: <a href="mailto:instituto@institutoempresa.com.br" style="color:var(--azul2)">instituto@institutoempresa.com.br</a> &nbsp;·&nbsp; <a href="https://www.conselheirosindependentes.com" target="_blank" style="color:var(--azul2)">www.conselheirosindependentes.com</a>
   </div>
 </div>
 
@@ -565,7 +704,7 @@ function swResFilter(f){resFilter=f;document.querySelectorAll('.res-ftab').forEa
 function swCF(s){cfSub=s;['com','sem','ext','multi'].forEach(x=>{document.getElementById('sub-cf-'+x).classList.toggle('active',x===s);document.getElementById('cf-'+x).style.display=x===s?'block':'none'})}
 function swCA(s){caSub=s;['ca','audit'].forEach(x=>{document.getElementById('sub-ca-'+x).classList.toggle('active',x===s);document.getElementById('ca-'+x).style.display=x===s?'block':'none'})}
 function filt(){const s=document.getElementById('search').value.trim().toLowerCase();const cat=document.getElementById('fy-cat').value;const or=document.getElementById('only-risk').checked;fd=D.ago2026.filter(e=>{if(s&&!e.n.toLowerCase().includes(s)&&!e.c.includes(s))return false;if(or&&!e.r)return false;if(cat&&!e.docs.some(d=>d.cats[cat]))return false;return true});document.getElementById('rc').textContent=fd.length+' empresa(s)';render()}
-function render(){if(cur==='ago')rAgo();else if(cur==='risco')rRisco();else if(cur==='longevidade')rLongevidade();else if(cur==='cons')rCons();else if(cur==='ca')rCA();else if(cur==='cf')rCF();else if(cur==='pas')rPAS();else if(cur==='vagas')rVagas();else if(cur==='tse')rTSE();else if(cur==='metodologia')rMet();else rResumo()}
+function render(){if(cur==='ago')rAgo();else if(cur==='risco')rRisco();else if(cur==='longevidade')rLongevidade();else if(cur==='cons')rCons();else if(cur==='ca')rCA();else if(cur==='cf')rCF();else if(cur==='pas')rPAS();else if(cur==='vagas')rVagas();else if(cur==='tse')rTSE();else if(cur==='destaques'){}else if(cur==='metodologia')rMet();else rResumo()}
 
 function rLongevidade(){
   var LV=(D.obs&&D.obs.longevidade)||{lista:[],long8:0,long10:0,long12:0,long15:0,total_indep:0};
@@ -1278,6 +1417,32 @@ function rMet(){
   // static — nothing to render dynamically
 }
 render();
+
+// ── Inicialização: stats-bar + hero ──
+(function(){
+  var d=D,el;
+  function s(id,v){if((el=document.getElementById(id)))el.textContent=v;}
+  var agoAll=d.ago2026||[];
+  var risk=agoAll.filter(function(e){return e.r;});
+  var docs=agoAll.reduce(function(t,e){return t+(e.docs?e.docs.length:0);},0);
+  s('st-emp',agoAll.length);
+  s('st-docs',docs);
+  s('st-risk',risk.length);
+  s('st-multi',(d.multi_ca||[]).length);
+  s('st-cf',(d.cf_list||[]).length);
+  s('st-pas',(d.pas_matches||[]).length);
+  s('hero-emp',agoAll.length);
+})();
 </script>
+
+<div class="site-footer">
+  <strong>Observatório Governança Corporativa — AGOs B3 2026</strong><br>
+  Instituto Empresa · Forum de Conselheiros Independentes<br>
+  <a href="https://www.conselheirosindependentes.com" target="_blank" rel="noopener">www.conselheirosindependentes.com</a>
+  &nbsp;·&nbsp;
+  <a href="mailto:instituto@institutoempresa.com.br">instituto@institutoempresa.com.br</a><br>
+  <span style="font-size:10px;opacity:.6">Dados: CVM (FRE · IPE · DFP · PAS) · Atualizado 19/05/2026 · Uso livre com citação da fonte · Não constitui consultoria jurídica ou de investimento</span>
+</div>
+
 </body>
 </html>
