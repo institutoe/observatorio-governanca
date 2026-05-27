@@ -698,7 +698,7 @@ const CC={"Demonstrações Financeiras":"t-fin","Destinação / Dividendos":"t-d
 D.obs = CC.obs || {};
 const CATCOL={"Demonstrações Financeiras":"#0ea5e9","Destinação / Dividendos":"#22c55e","Eleição de Conselho":"#8b5cf6","Remuneração":"#f59e0b","Reforma / Capital":"#f97316","⚠️ Risco Minoritários":"#ef4444","Outros":"#9ca3af"};
 let cur='ago',fd=[...D.ago2026],cfSub='com',caSub='ca',vgAno='2026',resFilter='all';
-function sw(t){cur=t;document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t));render()}
+function sw(t){cur=t;document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t));if(typeof _adminTrackTab==='function')_adminTrackTab(t);render()}
 function swVG(y){vgAno=y;['2026','2027'].forEach(x=>{var el=document.getElementById('vgtab-'+x);if(el)el.classList.toggle('active',x===y);});rVagas();}
 function swResFilter(f){resFilter=f;document.querySelectorAll('.res-ftab').forEach(function(b){b.classList.toggle('active',b.dataset.f===f);});render();}
 function swCF(s){cfSub=s;['com','sem','ext','multi'].forEach(x=>{document.getElementById('sub-cf-'+x).classList.toggle('active',x===s);document.getElementById('cf-'+x).style.display=x===s?'block':'none'})}
@@ -1442,7 +1442,89 @@ render();
   &nbsp;·&nbsp;
   <a href="mailto:instituto@institutoempresa.com.br">instituto@institutoempresa.com.br</a><br>
   <span style="font-size:10px;opacity:.6">Dados: CVM (FRE · IPE · DFP · PAS) · Atualizado 19/05/2026 · Uso livre com citação da fonte · Não constitui consultoria jurídica ou de investimento</span>
+  <br><span style="font-size:9px;opacity:.35"><a href="#" onclick="toggleAdmin();return false;" style="color:inherit;text-decoration:none">Ad</a></span>
 </div>
+
+<!-- Painel Admin -->
+<div id="admin-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;width:420px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.3);font-family:Arial,sans-serif">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <strong style="font-size:15px;color:#1a3560">Métricas — Observatório</strong>
+      <button onclick="toggleAdmin()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888">&#x2715;</button>
+    </div>
+    <div id="adm-body" style="font-size:13px;color:#374151;line-height:2">
+      <span style="color:#aaa">Carregando&#8230;</span>
+    </div>
+    <div style="margin-top:18px;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:10px">
+      Rastreamento via CounterAPI &middot; Contagem acumulada desde a instalação
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var NS='obs-gov-2026-ie';
+  var TABS=['ago','vagas','estatisticas','risco','longevidade','ca','cons','cf','pas','vinculos','destaques','metodologia'];
+  var LABELS={'ago':'AGOs 2026','vagas':'Vagas','estatisticas':'Estatísticas','risco':'Risco Minoritários','longevidade':'Longevidade','ca':'CA','cons':'Conselheiros','cf':'CF','pas':'PAS','vinculos':'Vínculos','destaques':'Destaques','metodologia':'Metodologia'};
+
+  fetch('https://api.counterapi.dev/v1/'+NS+'/visitas/up').catch(function(){});
+
+  window._adminTrackTab=function(tab){
+    fetch('https://api.counterapi.dev/v1/'+NS+'/tab-'+tab+'/up').catch(function(){});
+  };
+
+  window.toggleAdmin=function(){
+    var p=document.getElementById('admin-panel');
+    var show=p.style.display==='none';
+    p.style.display=show?'flex':'none';
+    if(show) loadAdminData();
+  };
+
+  function loadAdminData(){
+    var body=document.getElementById('adm-body');
+    body.innerHTML='<span style="color:#aaa">Carregando&#8230;</span>';
+    var keys=['visitas'].concat(TABS.map(function(t){return 'tab-'+t;}));
+    var results={};
+    var done=0;
+    keys.forEach(function(k){
+      fetch('https://api.counterapi.dev/v1/'+NS+'/'+k)
+        .then(function(r){return r.json();})
+        .then(function(d){results[k]=d.count||0;})
+        .catch(function(){results[k]=0;})
+        .finally(function(){
+          done++;
+          if(done===keys.length) renderAdmin(results);
+        });
+    });
+  }
+
+  function renderAdmin(r){
+    var body=document.getElementById('adm-body');
+    var html='<table style="width:100%;border-collapse:collapse">';
+    html+='<tr style="background:#f8fafc"><td colspan="2" style="padding:6px 8px;font-weight:700;color:#1a3560;font-size:12px">ACESSOS TOTAIS</td>';
+    html+='<td style="padding:6px 8px;font-weight:800;font-size:18px;color:#1a3560;text-align:right">'+r['visitas']+'</td></tr>';
+    html+='<tr><td colspan="3" style="padding:4px 0;font-size:10px;color:#9ca3af;padding-left:8px">Abas mais acessadas</td></tr>';
+    var tabRows=[];
+    TABS.forEach(function(t){
+      tabRows.push({label:LABELS[t]||t,count:parseInt(r['tab-'+t])||0});
+    });
+    tabRows.sort(function(a,b){return b.count-a.count;});
+    var maxC=tabRows[0].count||1;
+    var colors=['#eff6ff','#f0fdf4','#fefce8'];
+    tabRows.forEach(function(row,i){
+      var bg=i<3?colors[i]:'#fff';
+      var pct=Math.round(row.count/maxC*100);
+      html+='<tr style="background:'+bg+'">';
+      html+='<td style="padding:5px 8px;color:#374151">'+row.label+'</td>';
+      html+='<td style="padding:5px 8px"><div style="background:#e5e7eb;border-radius:4px;height:6px;width:100%">';
+      html+='<div style="background:#2563a8;height:6px;border-radius:4px;width:'+pct+'%"></div></div></td>';
+      html+='<td style="padding:5px 8px;text-align:right;font-weight:600;color:#1a3560">'+row.count+'</td></tr>';
+    });
+    html+='</table>';
+    body.innerHTML=html;
+  }
+})();
+</script>
 
 </body>
 </html>
